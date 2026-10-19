@@ -183,6 +183,7 @@ Input: dict with ctx (Helm root context), containerName, svcHost, svcPort, svcDi
   securityContext:
     allowPrivilegeEscalation: false
     runAsNonRoot: true
+    readOnlyRootFilesystem: true
     {{- /* postgres:16-alpine defaults to root, so vanilla k8s needs an explicit
     non-root uid; OpenShift restricted-v2 rejects uid 70 and injects a
     namespace-range uid when none is set. */}}

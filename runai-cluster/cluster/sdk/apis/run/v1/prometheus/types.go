@@ -8,6 +8,7 @@ package prometheus
 
 import (
 	"fmt"
+	"strings"
 
 	cpclusterclient "github.com/dsx-ai-factory/run-ai/control-plane/cluster-service/pkg/client/generated"
 	"github.com/dsx-ai-factory/run-ai/runai-cluster/cluster/sdk/apis/run/v1/common"
@@ -194,7 +195,8 @@ func (s *Spec) SetDefaultsWhereNeeded(internalSpec *runv1_internal.Internal, han
 	}
 
 	if (s.Image == nil || *s.Image == "") && internalSpec.Global.ImageRegistry != "" {
-		s.Image = ptr.To(fmt.Sprintf("%s/prometheus:v2.54.1", internalSpec.Global.ImageRegistry))
+		reg := strings.TrimRight(internalSpec.Global.ImageRegistry, "/")
+		s.Image = ptr.To(fmt.Sprintf("%s/prometheus:v2.54.1", reg))
 	}
 
 	s.configureRemoteMetricStoreWrites(internalSpec.Global.ControlPlane.Config.MetricsRemoteWrites, internalSpec.Global.CustomCA, handler)

@@ -165,7 +165,7 @@ global:
     tag: "16-alpine"
     pullPolicy: IfNotPresent
   postgresImage:
-    registry: docker.io
+    registry: ""
     repository: postgres
     tag: "16-alpine"
     pullPolicy: IfNotPresent
@@ -1315,7 +1315,7 @@ keycloakx:
   extraInitContainers: |-
     {{- include "awaitingPostgresReadinessContainerFromMap" $ }}
     - name: keycloak-schema-init
-      image: "{{ $.Values.global.postgresImage.registry }}/{{ $.Values.global.postgresImage.repository }}:{{ $.Values.global.postgresImage.tag }}"
+      image: "{{ include \"control-plane.postgresImage.registry\" $ }}/{{ $.Values.global.postgresImage.repository }}:{{ $.Values.global.postgresImage.tag }}"
       volumeMounts:
         - mountPath: /etc/secrets
           name: db-password
