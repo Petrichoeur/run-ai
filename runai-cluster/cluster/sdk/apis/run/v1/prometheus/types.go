@@ -192,6 +192,11 @@ func (s *Spec) SetDefaultsWhereNeeded(internalSpec *runv1_internal.Internal, han
 	if s.Retention == "" {
 		s.Retention = "2h"
 	}
+
+	if (s.Image == nil || *s.Image == "") && internalSpec.Global.ImageRegistry != "" {
+		s.Image = ptr.To(fmt.Sprintf("%s/prometheus:v2.54.1", internalSpec.Global.ImageRegistry))
+	}
+
 	s.configureRemoteMetricStoreWrites(internalSpec.Global.ControlPlane.Config.MetricsRemoteWrites, internalSpec.Global.CustomCA, handler)
 }
 
