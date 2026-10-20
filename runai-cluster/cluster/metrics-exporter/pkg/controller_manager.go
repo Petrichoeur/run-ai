@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/dsx-ai-factory/run-ai/runai-cluster/cluster/common/constants"
 	"github.com/dsx-ai-factory/run-ai/runai-cluster/cluster/metrics_exporter/pkg/reconcilers"
 	"github.com/dsx-ai-factory/run-ai/runai-cluster/cluster/sdk/apis/scheduling/v2alpha2"
 	kaiv2 "github.com/kai-scheduler/KAI-scheduler/pkg/apis/scheduling/v2"
@@ -17,11 +18,16 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	k8sschedulingv1 "k8s.io/api/scheduling/v1"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
+
+const podSchedulerNameField = "spec.schedulerName"
 
 var scheme = runtime.NewScheme()
 
@@ -34,6 +40,7 @@ func CreateControllerManager(metricsListenPort string, enableLeaderElection bool
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme: scheme,
+		Cache:  cacheOptions(),
 		Metrics: metricsserver.Options{
 			BindAddress: fmt.Sprintf(":%s", metricsListenPort),
 		},
@@ -42,6 +49,16 @@ func CreateControllerManager(metricsListenPort string, enableLeaderElection bool
 	})
 
 	return mgr, err
+}
+
+func cacheOptions() cache.Options {
+	return cache.Options{
+		ByObject: map[client.Object]cache.ByObject{
+			&v1.Pod{}: {
+				Field: fields.OneTermEqualSelector(podSchedulerNameField, constants.RunaiScheduler),
+			},
+		},
+	}
 }
 
 func SetUpReconcilers(mgr ctrl.Manager, reconcilers []reconcilers.Reconciler) error {
