@@ -31,6 +31,8 @@ const podSchedulerNameField = "spec.schedulerName"
 
 var scheme = runtime.NewScheme()
 
+// CreateControllerManager initializes the manager with a filtered cache so the exporter
+// only watches cluster resources relevant to Run:ai metrics.
 func CreateControllerManager(metricsListenPort string, enableLeaderElection bool) (manager.Manager, error) {
 	utilruntime.Must(v1.AddToScheme(scheme))
 	utilruntime.Must(v2alpha2.AddToScheme(scheme))
@@ -51,6 +53,8 @@ func CreateControllerManager(metricsListenPort string, enableLeaderElection bool
 	return mgr, err
 }
 
+// cacheOptions restricts the Pod informer at the API server level to avoid caching
+// non-Run:ai pods in memory on large clusters.
 func cacheOptions() cache.Options {
 	return cache.Options{
 		ByObject: map[client.Object]cache.ByObject{
@@ -61,6 +65,7 @@ func cacheOptions() cache.Options {
 	}
 }
 
+// SetUpReconcilers registers each reconciler with the manager before starting its cache.
 func SetUpReconcilers(mgr ctrl.Manager, reconcilers []reconcilers.Reconciler) error {
 	for _, r := range reconcilers {
 		err := r.SetupWithManager(mgr)

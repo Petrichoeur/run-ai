@@ -16,6 +16,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 )
 
+// TestCacheOptionsFiltersPodsByRunaiScheduler ensures non-Run:ai pods are excluded
+// server-side before reaching the controller-runtime informer cache.
 func TestCacheOptionsFiltersPodsByRunaiScheduler(t *testing.T) {
 	options := cacheOptions()
 	require.NotNil(t, options.ByObject)
@@ -40,6 +42,8 @@ func TestCacheOptionsFiltersPodsByRunaiScheduler(t *testing.T) {
 	}))
 }
 
+// TestCacheOptionsPreservesOtherObjectsUnfiltered ensures CRDs like PodGroup and Queue
+// (which do not support spec.schedulerName field selectors) remain unfiltered.
 func TestCacheOptionsPreservesOtherObjectsUnfiltered(t *testing.T) {
 	options := cacheOptions()
 	assert.Len(t, options.ByObject, 1)
